@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from external import ImageSaliencyModel
 import numpy as np
@@ -38,22 +40,26 @@ def create_collage_image(img1: Image, img2: Image):
 
 def comparison(group1: List[str], group2: List[str], n_samples: int):
     chosen_group1, chosen_group2 = [], []
-    for _ in trange(n_samples):
+    os.makedirs('data/collages', exist_ok=True)
+    for i, _ in enumerate(trange(n_samples)):
         img1_path = np.random.choice(group1)
         img2_path = np.random.choice(group2)
 
         img1 = Image.open(img1_path)
         img2 = Image.open(img2_path)
         img = create_collage_image(img1, img2)
-        img.save('data/temp_img.png')
-        img_path = Path("data/temp_img.png")
+        img.save(f'data/collages/{i}.png')
+        img_path = Path(f'data/collages/{i}.png')
 
         model = ImageSaliencyModel(crop_binary_path=bin_path, crop_model_path=model_path)
         salient_x, salient_y = model.get_saliency_point(img_path=img_path)
-        if salient_y < 675:
+        print(salient_y)
+        if salient_y < 448:
             chosen_group1.append(img1_path)
-        else:
+        elif salient_y > 675:
             chosen_group2.append(img2_path)
+        else:
+            continue
     return chosen_group1, chosen_group2
 
 

@@ -44,7 +44,7 @@ def single_comparison(
         res = {group1_name: chosen_group1, group2_name: chosen_group2}
         with shelve.open('results') as results:
             results[f"{group1_name}_{group2_name}_{n_samples}"] = res
-    n1, n2 = len(res[group1_name]), len(group2_name)
+    n1, n2 = len(res[group1_name]), len(res[group2_name])
     print(f"{group1_name}: {n1}\n{group2_name}: {n2}")
     print(f"Ratio {group1_name}/{group2_name}: {n1/n2: .2f}")
 
@@ -68,6 +68,7 @@ def double_comparison(
 
     try:
         with shelve.open('results') as results:
+            print(f"{group1_name}_{group2_name}_{n_samples}")
             res = results[f"{group1_name}_{group2_name}_{n_samples}"]
     except (KeyError, FileNotFoundError):
         df = get_data()
@@ -77,7 +78,7 @@ def double_comparison(
         res = {group1_name: chosen_group1, group2_name: chosen_group2}
         with shelve.open('results') as results:
             results[f"{group1_name}_{group2_name}_{n_samples}"] = res
-    n1, n2 = len(res[group1_name]), len(group2_name)
+    n1, n2 = len(res[group1_name]), len(res[group2_name])
     print(f"{group1_name}: {n1}\n{group2_name}: {n2}")
     print(f"Ratio {group1_name}/{group2_name}: {n1/n2: .2f}")
 
