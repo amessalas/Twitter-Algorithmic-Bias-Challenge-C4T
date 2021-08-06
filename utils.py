@@ -10,7 +10,7 @@ import cv2
 import platform
 from typing import List
 
-IMGS_ROOT = 'data/fairface-img-margin125-trainval'
+IMGS_ROOT = "data/fairface-img-margin125-trainval"
 
 BIN_MAPS = {"Darwin": "mac", "Linux": "linux"}
 HOME_DIR = Path("./").expanduser()
@@ -21,17 +21,29 @@ np.random.seed(0)
 
 
 def get_data():
+    age_mapping = {
+        "0-2": "Child",
+        "3-9": "Child",
+        "10-19": "Child",
+        "20-29": "Adult",
+        "30-39": "Adult",
+        "40-49": "Adult",
+        "50-59": "Adult",
+        "60-69": "Adult",
+        "more than 70": "Adult",
+    }
     df_train = pd.read_csv("data/fairface_label_train.csv")
     df_val = pd.read_csv("data/fairface_label_val.csv")
     df = pd.concat([df_train, df_val])
     df.file = df.file.transform(lambda x: f"{IMGS_ROOT}/{x}")
-    return df
+    df.age = df.age.transform(lambda x: age_mapping[x])
+    return df.loc[df.age == "Adult"]
 
 
 def create_collage_image(img1: Image, img2: Image):
     width = 448
     height = 1123
-    new_image = Image.new('RGB', (width, height), (255, 255, 255))
+    new_image = Image.new("RGB", (width, height), (255, 255, 255))
 
     new_image.paste(img1, (0, 0))
     new_image.paste(img2, (0, 675))
@@ -40,7 +52,9 @@ def create_collage_image(img1: Image, img2: Image):
 
 def comparison(group1: List[str], group2: List[str], n_samples: int):
     chosen_group1, chosen_group2 = [], []
-    os.makedirs('data/collages', exist_ok=True)
+    not_chosen_group1, not_chosen_group2 = [], []
+
+    os.makedirs("data/collages", exist_ok=True)
     for i, _ in enumerate(trange(n_samples)):
         img1_path = np.random.choice(group1)
         img2_path = np.random.choice(group2)
@@ -48,19 +62,25 @@ def comparison(group1: List[str], group2: List[str], n_samples: int):
         img1 = Image.open(img1_path)
         img2 = Image.open(img2_path)
         img = create_collage_image(img1, img2)
-        img.save(f'data/collages/{i}.png')
-        img_path = Path(f'data/collages/{i}.png')
+        img.save(f"data/collages/{i}.png")
+        img_path = Path(f"data/collages/{i}.png")
 
-        model = ImageSaliencyModel(crop_binary_path=bin_path, crop_model_path=model_path)
+        model = ImageSaliencyModel(
+            crop_binary_path=bin_path, crop_model_path=model_path
+        )
         salient_x, salient_y = model.get_saliency_point(img_path=img_path)
         print(salient_y)
         if salient_y < 448:
             chosen_group1.append(img1_path)
+            not_chosen_group2.append(img2_path)
         elif salient_y > 675:
             chosen_group2.append(img2_path)
+            not_chosen_group1.append(img1_path)
         else:
-            continue
-    return chosen_group1, chosen_group2
+            not_chosen_group1.append(img1_path)
+            not_chosen_group2.append(img2_path)
+
+    return chosen_group1, chosen_group2, not_chosen_group1, not_chosen_group2
 
 
 def contrast(image: Image):
@@ -77,7 +97,7 @@ def sharpness(image: Image):
     return cv2.Laplacian(image, cv2.CV_64F).var()
 
 
-def measure_image_properties(images: List['str']):
+def measure_image_properties(images: List["str"]):
     c, s = [], []
     with tqdm(total=len(images)) as pbar:
         for img_name in images:
@@ -85,5 +105,7 @@ def measure_image_properties(images: List['str']):
             c.append(contrast(img))
             s.append(sharpness(img))
             pbar.update(1)
-        df_properties = pd.DataFrame([c, s], index=['contrast', 'index'], columns=images).T
+        df_properties = pd.DataFrame(
+            [c, s], index=["contrast", "sharpness"], columns=images
+        ).T
         return df_properties

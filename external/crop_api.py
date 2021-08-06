@@ -104,7 +104,7 @@ def generate_crop(img, x, y, targetRatio):
 
 
 def is_symmetric(
-        image: np.ndarray, threshold: float = 25.0, percentile: int = 95, size: int = 10
+    image: np.ndarray, threshold: float = 25.0, percentile: int = 95, size: int = 10
 ) -> bool:
     if percentile > 100:
         raise RuntimeError("error: percentile must be between 0 and 100")
@@ -136,10 +136,10 @@ def is_symmetric(
 
 class ImageSaliencyModel(object):
     def __init__(
-            self,
-            crop_binary_path,
-            crop_model_path,
-            aspectRatios=None,
+        self,
+        crop_binary_path,
+        crop_model_path,
+        aspectRatios=None,
     ):
         self.crop_binary_path = crop_binary_path
         self.crop_model_path = crop_model_path
@@ -154,8 +154,12 @@ class ImageSaliencyModel(object):
     #             )
 
     def get_saliency_point(self, img_path, aspectRatios=None):
+        # @amessalas: this method does not exist in the original repository
+        # of Twitter and it was added by us to facilitate our experiments
         output = self.get_output(img_path, aspectRatios=aspectRatios)
-        salient_x, salient_y, = output["salient_point"][0]
+        salient_x, salient_y, = output[
+            "salient_point"
+        ][0]
         return salient_x, salient_y
 
     def get_output(self, img_path, aspectRatios=None):
@@ -195,14 +199,14 @@ class ImageSaliencyModel(object):
         return ax
 
     def plot_crop_area(
-            self,
-            img,
-            salient_x,
-            salient_y,
-            aspectRatio,
-            ax=None,
-            original_crop=None,
-            checkSymmetry=True,
+        self,
+        img,
+        salient_x,
+        salient_y,
+        aspectRatio,
+        ax=None,
+        original_crop=None,
+        checkSymmetry=True,
     ):
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -243,14 +247,14 @@ class ImageSaliencyModel(object):
         return self.plot_img_crops(img_path, topK=1, aspectRatios=None)
 
     def plot_img_crops(
-            self,
-            img_path,
-            topK=1,
-            aspectRatios=None,
-            checkSymmetry=True,
-            sample=False,
-            col_wrap=None,
-            add_saliency_line=True,
+        self,
+        img_path,
+        topK=1,
+        aspectRatios=None,
+        checkSymmetry=True,
+        sample=False,
+        col_wrap=None,
+        add_saliency_line=True,
     ):
         img = mpimg.imread(img_path)
         img_h, img_w = img.shape[:2]
@@ -352,10 +356,10 @@ class ImageSaliencyModel(object):
         fig.tight_layout()
 
     def plot_img_crops_using_img(
-            self,
-            img,
-            img_format="JPEG",
-            **kwargs,
+        self,
+        img,
+        img_format="JPEG",
+        **kwargs,
     ):
         with tempfile.NamedTemporaryFile("w+b") as fp:
             print(fp.name)
