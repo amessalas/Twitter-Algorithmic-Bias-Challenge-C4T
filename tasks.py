@@ -35,7 +35,7 @@ def single_comparison(ctx, trait1, trait2, group1_name, group2_name, n_samples=1
     _validate_group_names(group1_name)
     _validate_group_names(group2_name)
     try:
-        with shelve.open("results2.db") as results:
+        with shelve.open("results") as results:
             res = results[f"{group1_name}_{group2_name}_{n_samples}"]
     except (KeyError, FileNotFoundError):
         df = get_data()
@@ -48,7 +48,7 @@ def single_comparison(ctx, trait1, trait2, group1_name, group2_name, n_samples=1
             group1_name: {"chosen": chosen_group1, "not_chosen": not_chosen_group1},
             group2_name: {"chosen": chosen_group2, "not_chosen": not_chosen_group2},
         }
-        with shelve.open("results2.db") as results:
+        with shelve.open("results") as results:
             results[f"{group1_name}_{group2_name}_{n_samples}"] = res
     n1, n2 = len(res[group1_name]["chosen"]), len(res[group2_name]["chosen"])
     print(f"{group1_name}: {n1}\n{group2_name}: {n2}")
@@ -66,7 +66,7 @@ def double_comparison(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
     group2_name = "".join([race_2, gender_2])
 
     try:
-        with shelve.open("results2.db") as results:
+        with shelve.open("results") as results:
             print(f"{group1_name}_{group2_name}_{n_samples}")
             res = results[f"{group1_name}_{group2_name}_{n_samples}"]
     except (KeyError, FileNotFoundError):
@@ -80,7 +80,7 @@ def double_comparison(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
             group1_name: {"chosen": chosen_group1, "not_chosen": not_chosen_group1},
             group2_name: {"chosen": chosen_group2, "not_chosen": not_chosen_group2},
         }
-        with shelve.open("results2.db") as results:
+        with shelve.open("results") as results:
             results[f"{group1_name}_{group2_name}_{n_samples}"] = res
     n1, n2 = len(res[group1_name]["chosen"]), len(res[group2_name]["chosen"])
     print(f"{group1_name}: {n1}\n{group2_name}: {n2}")
@@ -104,7 +104,7 @@ def image_properties(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
     try:
         df = pd.read_pickle(f"data/properties_{group1_name}_{group2_name}.pkl")
     except FileNotFoundError:
-        with shelve.open("results2.db") as results:
+        with shelve.open("results") as results:
             res = results[f"{group1_name}_{group2_name}_{n_samples}"]
 
         images_1_chosen = res[group1_name]["chosen"]
