@@ -89,7 +89,8 @@ def double_comparison(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
 
 @task
 def image_properties(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
-    import matplotlib.pyplot as plt
+    # for IP reasons, the mashap() function that is called here is not available publicly
+    # Please contact with andreas@code4thought.eu for more information
     import numpy as np
     from matplotlib.colors import LinearSegmentedColormap
 
@@ -129,24 +130,10 @@ def image_properties(ctx, race_1, race_2, gender_1, gender_2, n_samples=10000):
             ]
         )
         df.to_pickle(f"data/properties_{group1_name}_{group2_name}.pkl")
-
         shaps = mashap(df[["contrast", "sharpness"]], df["class"])
         shaps.columns = ["contrast_shap", "sharpness_shap"]
         df[["contrast_shap", "sharpness_shap"]] = shaps.values
         df.to_pickle(f"data/properties_{group1_name}_{group2_name}.pkl")
-
-    shap_col = df.contrast_shap
-    colors = []
-    for x in np.linspace(1, 0, int(abs(shap_col.min() * 100))):
-        colors.append((1, 0, 0, x))
-    for x in np.linspace(0, 1, int(abs(shap_col.max() * 100))):
-        colors.append((0, 1, 0, x))
-    red_transparent_green = LinearSegmentedColormap.from_list(
-        "red_transparent_green", colors
-    )
-    df.plot.scatter(
-        x="contrast", y="class", c="contrast_shap", cmap=red_transparent_green
-    )
 
     shap_col = df.sharpness_shap
     colors = []
